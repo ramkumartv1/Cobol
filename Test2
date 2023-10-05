@@ -1,0 +1,35 @@
+IDENTIFICATION DIVISION.              
+ PROGRAM-ID. SQLSEL.                  
+ 
+ DATA DIVISION.                                
+ WORKING-STORAGE SECTION.              
+ 01 WS-EMPL.                           
+    05 WS-EMPL-ID       PIC X(05).     
+    05 WS-EMPL-NAME     PIC X(15).     
+
+******** INCLUDING SQLCA COPYBOOK ************** 
+     EXEC SQL
+        INCLUDE SQLCA
+     END-EXEC.
+
+******** INCLUDING DCLGEN OF EMP TABLE*********
+     EXEC SQL
+        INCLUDE DCLEMP
+     END-EXEC.
+ 
+ PROCEDURE DIVISION.                   
+ MAIN-PARA.  
+                                
+     EXEC SQL
+        SELECT EMP_NAME INTO :WS-EMPL-NAME
+            FROM EMP
+            WHERE EMP_ID = '20000'
+     END-EXEC.     
+     
+     EVALUATE SQLCODE
+         WHEN ZERO
+              DISPLAY 'EMPLOYEE NAME: ' WS-EMPL-NAME
+         WHEN OTHER
+              DISPLAY 'ERROR EXECUTING SELECT'
+     END-EVALUATE.
+     STOP RUN.  
