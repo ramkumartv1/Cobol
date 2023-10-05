@@ -1,0 +1,1961 @@
+Convert the below code to Python     
+	 IDENTIFICATION DIVISION.
+       PROGRAM-ID. CCPURP01.
+       AUTHOR. RAM
+       ENVIRONMENT DIVISION.
+       CONFIGURATION SECTION.
+       SOURCE-COMPUTER.  IBM-370.
+       OBJECT-COMPUTER.  IBM-370.
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+       01 WS-CHAR-FND                  PIC X    VALUE 'N'.
+       01 WS-NUM-FND                   PIC X    VALUE 'N'.
+       01 WS-SPACE-FND                 PIC X    VALUE 'N'.
+       01 WS-SPACE-IND                 PIC X    VALUE 'N'.
+       01 WS-I                         PIC 9(2) VALUE ZEROS.
+       01 WS-COUNT-CUR1                PIC 9(2)  VALUE ZERO.
+       01 WS-EOF-CUR1                  PIC X  VALUE 'N'.
+       01 WS-EOF-CUR2                  PIC X  VALUE 'N'.
+       01 WS-COUNT                     PIC 9(2) VALUE ZEROS.
+       01 WS-MODE-IND                  PIC 9(1) VALUE ZERO.
+       01 WS-QUAN-TOT                  PIC 9(3) VALUE ZEROS.
+       01 WS-QUAN                      PIC 9(3) VALUE ZEROS.
+       01 WS-QUAN1                     PIC 9(3) VALUE ZEROS.
+       01 WS-QUAN2                     PIC 9(3) VALUE ZEROS.
+       01 WS-QUAN3                     PIC 9(3) VALUE ZEROS.
+       01 WS-QUAN4                     PIC 9(3) VALUE ZEROS.
+       01 WS-QUAN5                     PIC 9(3) VALUE ZEROS.
+       01 WS-QUAN6                     PIC 9(3) VALUE ZEROS.
+       01 WS-QUAN7                     PIC 9(3) VALUE ZEROS.
+       01 WS-PRICE-TOT                 PIC S9(6)V9(2) VALUE ZEROS.
+       01 WS-PRICE1                    PIC S9(6)V9(2) VALUE ZEROS.
+       01 WS-PRICE2                    PIC S9(6)V9(2) VALUE ZEROS.
+       01 WS-PRICE3                    PIC S9(6)V9(2) VALUE ZEROS.
+       01 WS-PRICE4                    PIC S9(6)V9(2) VALUE ZEROS.
+       01 WS-PRICE5                    PIC S9(6)V9(2) VALUE ZEROS.
+       01 WS-PRICE6                    PIC S9(6)V9(2) VALUE ZEROS.
+       01 WS-PRICE7                    PIC S9(6)V9(2) VALUE ZEROS.
+       01 WS-CASHAMOUNT                PIC 9(8)V9(2) VALUE ZEROS.
+       01 WS-PROD-PRICE-N              PIC 9(6)V9(2).
+       01 WS-PROD-PRICE-R              REDEFINES WS-PROD-PRICE-N.
+          05 WS-BEFORE-DECI            PIC 9(6).
+          05 WS-AFTER-DECI             PIC 9(2).
+       01 WS-PROD-PRICE-CHAR.
+          05 FILLER                    PIC X      VALUE SPACES.
+          05 WS-BEFORE-DEC             PIC ZZZZZ9 VALUE ZEROES.
+          05 WS-COMMA                  PIC X      VALUE '.'.
+          05 WS-AFTER-DEC              PIC X(2)   VALUE SPACES.
+       01 WS-HOST-VAR.
+          03 WS-CUST-ID                PIC S9(9) COMP.
+          03 WS-PROD-ID                PIC S9(9) COMP.
+          03 WS-PROD-NAME              PIC X(15) VALUE SPACES.
+          03 WS-USER-ID                PIC S9(9) COMP.
+       01 WS-DISPLAY-DATE.
+           05  WS-DISPLAY-DD           PIC  X(2).
+           05  WS-SLASH1               PIC  X(01)  VALUE '/'.
+           05  WS-DISPLAY-MM           PIC  X(2).
+           05  WS-SLASH2               PIC  X(01)  VALUE '/'.
+           05  WS-DISPLAY-CC           PIC  X(2)   VALUE '20'.
+           05  WS-DISPLAY-YY           PIC  X(2).
+       01 WS-DATE-TIME                 PIC S9(15) COMP-3 VALUE ZEROES.
+       01 WS-DATE                      PIC  X(08)        VALUE SPACES.
+       01 WS-TIME                      PIC  X(08)        VALUE SPACES.
+       01 WS-QUANTITY                  PIC X(3) VALUE SPACES.
+       01 WS-CARD-NO                   PIC X(16) VALUE SPACES.
+       01 WS-AMOUNT-VAL.
+           05 WS-AMOUNT-RS             PIC 9(06) VALUE ZEROS.
+           05 FILLER                   PIC X(01) VALUE '.'.
+           05 WS-AMOUNT-PS             PIC 9(02) VALUE ZEROS.
+       01 WS-AMOUNT-REF                REDEFINES  WS-AMOUNT-VAL.
+           05 WS-PURCHASE-REF          PIC Z(6).Z(2).
+       01 WS-CNT1                      PIC 9(2) VALUE 1.
+       01 WS-CNT2                      PIC 9(2) VALUE 7.
+       01 WS-LINK-PGM                  PIC X(8) VALUE SPACES.
+       01 MSGTXT.
+          05 WS-CCPUR01                PIC X(70)         VALUE
+             'ONLY S SHOULD BE ENTERED FOR SELECT CCPUR01'.
+          05 WS-CCPUR02                PIC X(70)         VALUE
+             'PLEASE SELECT ATLEAST ONE CARD CCPUR02'.
+          05 WS-CCPUR03                PIC X(70)         VALUE
+             'PLEASE SELECT ONLY ONE CARD FOR PURCHASE CCPUR03'.
+          05 WS-CCPUR04                PIC X(70)         VALUE
+             'SELECT ONLY ONE MODE OF PURCHASE CCPUR04 '.
+          05 WS-CCPUR05                PIC X(70)         VALUE
+             'SELECT ANY ONE PURHASE MODE CCPUR05 '.
+          05 WS-CCPUR06                PIC X(70)         VALUE
+             'PLEASE ENTER THE AMOUNT CCPUR06'.
+          05 WS-CCPUR07                PIC X(70)         VALUE
+             'AMOUNT SHOULD BE NUMERIC CCPUR07'.
+          05 WS-CCPUR08                PIC X(70)         VALUE
+             'SPACE NOT ALLOWED IN BETWEEN AMOUNT CCPUR08'.
+          05 WS-CCPUR09                PIC X(70)         VALUE
+             'PRESS ENTER TO CONFIRM CCPUR09'.
+          05 WS-CCPUR10                PIC X(70)         VALUE
+             'PRODUCTS PURCHASED AND CASH DEDECTED FROM CARD CCPUR10'.
+          05 WS-CCPUR11                PIC X(70)         VALUE
+             'INVALID PF-KEY PRESSED CCPUR11'.
+          05 WS-CCPUR12                PIC X(70)         VALUE
+             'PROVIDE ONLY NUMERIC WHOLE-NUMBER QUANTITY CCPUR12'.
+          05 WS-CCPUR13                PIC X(70)         VALUE
+             'INVALID CUSTOMER-ID CCPUR13 '.
+          05 WS-CCPUR14                PIC X(70)         VALUE
+             'PLEASE PRESS PF5 TO CONFIRM '.
+          05 WS-CCPUR15                PIC X(70)         VALUE
+             'NO SUPPLIMENTARY CARD EXISTS TO SELECT CCPUR15 '.
+          05 WS-CCPUR16                PIC X(70)         VALUE
+             'PLEASE ENTER THE QUANTITY CCPUR16 '.
+          05 WS-CCPUR17                PIC X(70)         VALUE
+             'PLEASE ENTER THE VALID DECIMAL DIGITS CCPUR17 '.
+          05 WS-CCPUR18                PIC X(70)         VALUE
+             'PLEASE ENTER THE MERCHANT NAME CCPUR18 '.
+          05 WS-CCPUR19                PIC X(70)         VALUE
+             'PAISE SHOULD BE NUMERIC CCPUR19 '.
+          05 WS-CCPUR20                PIC X(70)         VALUE
+             'TRANSID INVALID, PLEASE ENTER LOGIN TRANS ID CCPUR20'.
+       COPY CCPURM1.
+       COPY DFHBMSCA.
+       COPY DFHAID.
+           EXEC SQL
+                INCLUDE SQLCA
+           END-EXEC.
+           EXEC SQL
+                INCLUDE PURCHASE
+           END-EXEC.
+
+           EXEC SQL
+                INCLUDE CARD
+           END-EXEC.
+
+           EXEC SQL
+                INCLUDE TRANSACT
+           END-EXEC.
+
+           EXEC SQL
+                INCLUDE CUSTOMER
+           END-EXEC.
+
+           EXEC SQL
+                INCLUDE PRODUCT
+           END-EXEC.
+
+           EXEC SQL
+               DECLARE CUR1 CURSOR  FOR
+               SELECT  PROD_ID,
+                       PROD_NAME,
+                       PROD_PRICE
+                  FROM TUTORIAL.TUTORIAL.PRODUCT
+           END-EXEC.
+
+           EXEC SQL
+                DECLARE CUR2 CURSOR  FOR
+                SELECT  CARD_NO,
+                        CARD_STAT
+                  FROM  TUTORIAL.CARD
+                 WHERE  CUST_ID = :WS-CUST-ID
+           END-EXEC.
+       LINKAGE SECTION.
+       01 DFHCOMMAREA.
+            05  LS-COMM-SCREEN.
+             10 LS-USER-ID             PIC S9(9) COMP.
+             10 LS-ACCESS-TYPE         PIC X(1).
+             10 LS-CURR-PROGRAM        PIC X(08).
+             10 LS-TRANS-ID            PIC X(4).
+            05  LS-SCR-FLD.
+             10 LS-SCR-CUST-ID         PIC S9(9) COMP.
+             10 LS-SCR-CARD-NO         PIC X(16).
+             10 LS-SCR-BASICRD         PIC X(16).
+             10 LS-SCR-SUPPCRD         PIC X(16).
+             10 LS-ENTER-IND           PIC 9(1).
+             10 LS-PROD-PRICE-1        PIC S9(6)V9(2).
+             10 LS-PROD-PRICE-2        PIC S9(6)V9(2).
+             10 LS-PROD-PRICE-3        PIC S9(6)V9(2).
+             10 LS-PROD-PRICE-4        PIC S9(6)V9(2).
+             10 LS-PROD-PRICE-5        PIC S9(6)V9(2).
+             10 LS-PROD-PRICE-6        PIC S9(6)V9(2).
+             10 LS-PROD-PRICE-7        PIC S9(6)V9(2).
+             10 LS-MERCHANT            PIC X(20).
+             10 LS-PROD-ID1            PIC S9(9) COMP.
+             10 LS-PROD-ID2            PIC S9(9) COMP.
+             10 LS-PROD-ID3            PIC S9(9) COMP.
+             10 LS-PROD-ID4            PIC S9(9) COMP.
+             10 LS-PROD-ID5            PIC S9(9) COMP.
+             10 LS-PROD-ID6            PIC S9(9) COMP.
+             10 LS-PROD-ID7            PIC S9(9) COMP.
+            05  FILLER                 PIC X(1826).
+       0000-MAIN-PROCESS.
+           EXEC CICS
+                IGNORE CONDITION MAPFAIL
+           END-EXEC
+              MOVE SPACES              TO MESSAGEO    
+           IF EIBCALEN = 0
+              PERFORM 1000-SEND-ERROR-TEXT
+                 THRU 1000-SEND-ERROR-TEXT-EXIT
+           END-IF
+           IF LS-CURR-PROGRAM NOT = 'CCPURP01'
+              MOVE 'CCPURP01'          TO LS-CURR-PROGRAM
+              PERFORM 2000-CHECK-CUSTID
+                 THRU 2000-CHECK-CUSTID-EXIT
+
+              IF MESSAGEO = SPACES
+                 PERFORM 3000-CARD-INFO
+                    THRU 3000-CARD-INFO-EXIT
+              END-IF
+              MOVE -1                  TO BASICCDL
+           ELSE
+              PERFORM 4000-RECEIVE-MAP
+                 THRU 4000-RECEIVE-MAP-EXIT
+              MOVE SPACES              TO MESSAGEO
+
+              PERFORM 5000-VALIDATE-PFKEYS
+                 THRU 5000-VALIDATE-PFKEYS-EXIT
+           END-IF.
+           IF (SUPPCRDO = SPACES OR LOW-VALUES
+                                 OR '________________')
+              MOVE -1                  TO BASICCDL
+              MOVE DFHBMPRF            TO ADDONCDA
+                                          SUPPCRDA
+           END-IF
+           PERFORM 6000-UNDERSCORE-IF-SPACE
+              THRU 6000-UNDERSCORE-IF-SPACE-EXIT
+
+           PERFORM 7000-DISPLAY-DATE
+              THRU 7000-DISPLAY-DATE-EXIT
+           PERFORM 8000-SEND-MAP
+              THRU 8000-SEND-MAP-EXIT.
+
+       0000-MAIN-PROCESS-EXIT.
+           EXIT.
+
+      */***************************************
+       1000-SEND-ERROR-TEXT.
+
+           EXEC CICS
+                SEND TEXT
+                FROM(WS-CCPUR20)
+                ERASE
+           END-EXEC
+
+           EXEC CICS
+                RETURN
+           END-EXEC.
+
+       1000-SEND-ERROR-TEXT-EXIT.
+           EXIT.
+
+      ******************************************************************
+      *  CHECK FOR THE CUSTOMER ID PRESENCE
+      ******************************************************************
+       2000-CHECK-CUSTID.
+
+           EXEC SQL
+                SELECT
+                      CUST_ID
+                INTO
+                      :WS-CUST-ID
+                FROM   TUTORIAL.CUSTOMER
+                WHERE  USER_ID = :LS-USER-ID
+           END-EXEC.
+
+           EVALUATE SQLCODE
+               WHEN 0
+                    MOVE WS-CUST-ID    TO  CUSTIDO
+                                           LS-SCR-CUST-ID
+               WHEN OTHER
+                    PERFORM 9000-ABEND-CALL
+                       THRU 9000-ABEND-CALL-EXIT
+           END-EVALUATE.
+
+       2000-CHECK-CUSTID-EXIT.
+           EXIT.
+      ******************************************************************
+       3000-CARD-INFO.
+
+           PERFORM 3100-OPEN-CUR2
+              THRU 3100-OPEN-CUR2-EXIT.
+
+           IF MESSAGEO = SPACES
+              PERFORM 3200-FETCH-CUR2
+                 THRU 3200-FETCH-CUR2-EXIT UNTIL  WS-EOF-CUR2 = 'Y'
+           END-IF.
+
+           IF MESSAGEO = SPACES
+              PERFORM 3300-CLOSE-CUR2
+                 THRU 3300-CLOSE-CUR2-EXIT
+           END-IF.
+       3000-CARD-INFO-EXIT.
+           EXIT.
+
+      */******   OPEN CURSOR-2   >>>>
+       3100-OPEN-CUR2.
+           EXEC SQL
+                OPEN CUR2
+           END-EXEC.
+
+           EVALUATE SQLCODE
+               WHEN 0
+                    CONTINUE
+               WHEN OTHER
+                    PERFORM 9000-ABEND-CALL
+                       THRU 9000-ABEND-CALL-EXIT
+           END-EVALUATE.
+
+       3100-OPEN-CUR2-EXIT.
+           EXIT.
+
+      */******   FETCH CURSOR-2   >>>>
+       3200-FETCH-CUR2.
+
+           EXEC SQL
+                FETCH CUR2
+                INTO  :WS-CARD-NO,
+                      :CARD-STAT
+           END-EXEC.
+
+           EVALUATE SQLCODE
+               WHEN 0
+                    MOVE 0             TO LS-ENTER-IND
+                    IF WS-CARD-NO(9:1) = '0' AND CARD-STAT = '1'
+                       MOVE WS-CARD-NO TO BASICRDO
+                                          LS-SCR-BASICRD
+                       MOVE ALL '*'    TO BASICRDO(1:12)
+                    END-IF
+                    IF WS-CARD-NO(9:1) = '1' AND CARD-STAT = '1'
+                       MOVE WS-CARD-NO TO SUPPCRDO
+                                          LS-SCR-SUPPCRD
+                       MOVE ALL '*'    TO SUPPCRDO(1:12)
+                    END-IF
+               WHEN +100
+                    MOVE 'Y'           TO WS-EOF-CUR2
+               WHEN OTHER
+                    PERFORM 9000-ABEND-CALL
+                       THRU 9000-ABEND-CALL-EXIT
+           END-EVALUATE.
+
+       3200-FETCH-CUR2-EXIT.
+           EXIT.
+
+      */******   CLOSE CURSOR-2   >>>>
+       3300-CLOSE-CUR2.
+
+           EXEC SQL
+                CLOSE CUR2
+           END-EXEC.
+
+           EVALUATE SQLCODE
+               WHEN 0
+                    CONTINUE
+               WHEN OTHER
+                   PERFORM 9000-ABEND-CALL
+                      THRU 9000-ABEND-CALL-EXIT
+           END-EVALUATE.
+
+       3300-CLOSE-CUR2-EXIT.
+           EXIT.
+
+      ******************************************************************
+      *    RECEIEVE THE MAP WITH RECORDS
+      ******************************************************************
+       4000-RECEIVE-MAP.
+
+            EXEC CICS
+                 RECEIVE MAPSET('CCPURM1')
+                         MAP   ('CCPURMK')
+                         INTO  (CCPURMKI)
+            END-EXEC.
+
+       4000-RECEIVE-MAP-EXIT.
+           EXIT.
+
+      */***************************************************************/
+
+       5000-VALIDATE-PFKEYS.
+
+           EVALUATE EIBAID
+               WHEN DFHENTER
+                    PERFORM 5100-VALIDATE-ENTER
+                       THRU 5100-VALIDATE-ENTER-EXIT
+               WHEN DFHPF3
+                    MOVE 'CCMENP01'    TO WS-LINK-PGM
+                    PERFORM 5200-VALIDATE-LINK
+                       THRU 5200-VALIDATE-LINK-EXIT
+               WHEN DFHPF5
+                    PERFORM 5300-VALIDATE-PF5
+                       THRU 5300-VALIDATE-PF5-EXIT
+               WHEN DFHPF12
+                    MOVE 'CCUSRP03'    TO WS-LINK-PGM
+                    PERFORM 5200-VALIDATE-LINK
+                       THRU 5200-VALIDATE-LINK-EXIT
+               WHEN DFHCLEAR
+                    PERFORM 5500-VALIDATE-CLEAR
+                       THRU 5500-VALIDATE-CLEAR-EXIT
+               WHEN OTHER
+                    PERFORM 5600-VALIDATE-OTHER
+                       THRU 5600-VALIDATE-OTHER-EXIT
+           END-EVALUATE.
+
+       5000-VALIDATE-PFKEYS-EXIT.
+           EXIT.
+
+      ******************************************************************
+      *    WHEN ENTER IS PRESSED
+      ******************************************************************
+       5100-VALIDATE-ENTER.
+
+           IF LS-ENTER-IND = 3
+              MOVE -1                  TO BASICCDL
+              MOVE WS-CCPUR14          TO MESSAGEO
+              MOVE DFHBMPRF            TO SEL1A   QUAN1A  MERCHNMA
+                                          SEL2A   QUAN2A  BASICCDA
+                                          SEL3A   QUAN3A  ADDONCDA
+                                          SEL4A   QUAN4A  SLCASHA
+                                          SEL5A   QUAN5A  SLPOSA
+                                          SEL6A   QUAN6A  SLONLINA
+                                          SEL7A   QUAN7A
+           END-IF
+
+           IF LS-ENTER-IND = 2
+              IF (SEL1I = 'S' OR SEL2I = 'S' OR SEL3I = 'S' OR
+                  SEL4I = 'S' OR SEL5I = 'S' OR SEL6I = 'S' OR
+                  SEL7I = 'S')
+                  PERFORM 5150-VALIDATE-QUANTITY
+                     THRU 5150-VALIDATE-QUANTITY-EXIT
+              ELSE
+                  PERFORM 6200-VALIDATE-SELECT
+                     THRU 6200-VALIDATE-SELECT-EXIT
+              END-IF
+           END-IF
+
+           IF LS-ENTER-IND = 1
+              PERFORM 5130-VALIDATE-CASH
+                 THRU 5130-VALIDATE-CASH-EXIT
+           END-IF
+
+           IF LS-ENTER-IND = 0
+              PERFORM  5110-BASIC-ADDON
+                 THRU  5110-BASIC-ADDON-EXIT
+
+              IF MESSAGEO = SPACE
+                 PERFORM 5120-PURCHASE-MODE
+                    THRU 5120-PURCHASE-MODE-EXIT
+              END-IF
+           END-IF.
+
+       5100-VALIDATE-ENTER-EXIT.
+           EXIT.
+
+      */*** VALIDATION OF SELECT FOR BASIC OR ADD ON CARD  *******/
+       5110-BASIC-ADDON.
+
+            IF (BASICCDI NOT = SPACES AND LOW-VALUES AND '_')
+                IF BASICCDI NOT = 'S'
+                   MOVE WS-CCPUR01     TO MESSAGEO
+                   MOVE DFHUNIMD       TO BASICCDA
+                   MOVE -1             TO BASICCDL
+                END-IF
+            END-IF.
+
+            IF MESSAGEO = SPACE
+               IF (ADDONCDI NOT = SPACES AND LOW-VALUES AND '_')
+                  IF ADDONCDI NOT = 'S'
+                     MOVE WS-CCPUR01   TO MESSAGEO
+                     MOVE DFHUNIMD     TO ADDONCDA
+                     MOVE -1           TO ADDONCDL
+                  END-IF
+               END-IF
+            END-IF.
+
+            IF MESSAGEO = SPACE
+               IF (BASICCDI = SPACE OR LOW-VALUES OR '_')
+                  AND (ADDONCDI = SPACE OR LOW-VALUES OR '_')
+                  MOVE WS-CCPUR02      TO MESSAGEO
+                  MOVE DFHUNIMD        TO BASICCDA
+                                          ADDONCDA
+                  MOVE -1              TO BASICCDL
+               END-IF
+
+               IF BASICCDI = 'S'
+                  AND ADDONCDI = 'S'
+                   MOVE WS-CCPUR03     TO MESSAGEO
+                   MOVE DFHUNIMD       TO BASICCDA
+                                          ADDONCDA
+                   MOVE -1             TO BASICCDL
+               END-IF
+            END-IF.
+       5110-BASIC-ADDON-EXIT.
+           EXIT.
+
+      */*** VALIDATION OF SELECT FOR DISPLAY  *******/
+       5120-PURCHASE-MODE.
+
+           INITIALIZE WS-MODE-IND
+
+           IF (SLCASHI NOT = SPACES AND LOW-VALUES AND '_')
+              IF SLCASHI NOT = 'S'
+                 MOVE WS-CCPUR01       TO MESSAGEO
+                 MOVE DFHUNIMD         TO SLCASHA
+                 MOVE -1               TO SLCASHL
+              ELSE
+                 ADD 1                 TO WS-MODE-IND
+              END-IF
+           END-IF
+
+           IF MESSAGEO = SPACE
+              IF (SLPOSI NOT = SPACES AND LOW-VALUES AND '_')
+                 IF SLPOSI NOT = 'S'
+                    MOVE WS-CCPUR01    TO MESSAGEO
+                    MOVE DFHUNIMD      TO SLPOSA
+                    MOVE -1            TO SLPOSL
+                 ELSE
+                    ADD 1              TO WS-MODE-IND
+                 END-IF
+              END-IF
+           END-IF
+
+           IF MESSAGEO = SPACE
+              IF (SLONLINI NOT = SPACES AND LOW-VALUES AND '_')
+                 IF SLONLINI = 'S'
+                    ADD 1 TO WS-MODE-IND
+                 ELSE
+                    MOVE WS-CCPUR01    TO MESSAGEO
+                    MOVE DFHUNIMD      TO SLONLINA
+                    MOVE -1            TO SLONLINL
+                 END-IF
+              END-IF
+           END-IF.
+
+           IF MESSAGEO = SPACE
+              IF WS-MODE-IND >= 2
+                 MOVE WS-CCPUR04       TO MESSAGEO
+                 MOVE DFHUNIMD         TO SLONLINA
+                                          SLPOSA
+                                          SLCASHA
+                 MOVE -1               TO SLCASHL
+
+              END-IF
+
+              IF WS-MODE-IND = 0
+                 MOVE WS-CCPUR05       TO MESSAGEO
+                 MOVE DFHUNIMD         TO SLONLINA
+                                          SLPOSA
+                                          SLCASHA
+                 MOVE -1               TO SLCASHL
+              END-IF
+           END-IF.
+
+           IF MESSAGEO = SPACES
+              IF SLCASHI = 'S'
+                 MOVE 1                TO LS-ENTER-IND
+                 MOVE -1               TO CASHAMOUNTL
+                 MOVE DFHBMFSE         TO CASHAMOUNTA
+                                          PAISECUA
+                 MOVE DFHBMPRF         TO BASICCDA
+                                          ADDONCDA
+                                          SLCASHA
+                                          SLPOSA
+                                          SLONLINA
+              END-IF
+           END-IF.
+
+           IF MESSAGEO = SPACES
+              IF SLPOSI = 'S' OR SLONLINI = 'S'
+                 MOVE 2                TO LS-ENTER-IND
+                 MOVE DFHBMPRF         TO BASICCDA
+                                          ADDONCDA
+                                          SLCASHA
+                                          SLPOSA
+                                          SLONLINA
+
+                 PERFORM 5210-VALIDATE-SELECT
+                    THRU 5210-VALIDATE-SELECT-EXIT
+              END-IF
+           END-IF.
+
+       5120-PURCHASE-MODE-EXIT.
+           EXIT.
+
+      */****** VALIDATION OF THE CASH  ********************************/
+       5130-VALIDATE-CASH.
+
+           IF (CASHAMOUNTI NOT = SPACES AND LOW-VALUES AND '______')
+              INSPECT CASHAMOUNTI REPLACING LEADING '_' BY ZEROS
+              INSPECT CASHAMOUNTI REPLACING LEADING SPACES BY ZEROS
+              INSPECT CASHAMOUNTI REPLACING ALL '_' BY SPACES
+              INSPECT CASHAMOUNTI TALLYING WS-CNT1 FOR CHARACTERS
+              BEFORE INITIAL SPACE
+
+              IF (CASHAMOUNTI = 0 OR 00 OR 000 OR 0000
+                                  OR 00000 OR 000000)
+                 INSPECT CASHAMOUNTI REPLACING ALL ZEROES BY '_'
+                 INSPECT CASHAMOUNTI REPLACING ALL SPACES BY '_'
+                 MOVE WS-CCPUR06            TO MESSAGEO
+                 MOVE DFHUNIMD              TO CASHAMOUNTA
+                                               PAISECUA
+                 MOVE -1                    TO CASHAMOUNTL
+
+              ELSE
+                 IF WS-CNT1 < 6
+                    COMPUTE WS-CNT2 = WS-CNT2 - WS-CNT1
+                    IF CASHAMOUNTI(WS-CNT1:WS-CNT2) NOT = SPACES
+                       MOVE   WS-CCPUR08    TO MESSAGEO
+                       MOVE DFHUNIMD        TO CASHAMOUNTA
+                                               PAISECUA
+                       MOVE -1              TO CASHAMOUNTL
+                    END-IF
+                 END-IF
+
+                 IF MESSAGEO = SPACES
+                   COMPUTE WS-CNT1 = WS-CNT1 - 1
+                   MOVE CASHAMOUNTI (1:WS-CNT1) TO WS-AMOUNT-RS
+                   INSPECT CASHAMOUNTI REPLACING LEADING ZEROS BY SPACES
+
+                   IF WS-AMOUNT-RS IS NOT NUMERIC
+                      MOVE WS-CCPUR07       TO MESSAGEO
+                      MOVE -1               TO CASHAMOUNTL
+                      MOVE DFHUNIMD         TO CASHAMOUNTA
+                                               PAISECUA
+                   ELSE
+                      IF PAISECUI NOT = ZEROS
+                         IF PAISECUI IS NOT NUMERIC
+                            MOVE DFHUNIMD   TO PAISECUA
+                            MOVE -1         TO PAISECUL
+                            MOVE WS-CCPUR19 TO MESSAGEO
+                         ELSE
+                            MOVE PAISECUI   TO WS-AMOUNT-PS
+                         END-IF
+                      ELSE
+                         MOVE ZEROS         TO WS-AMOUNT-PS
+                      END-IF
+
+                      MOVE WS-PURCHASE-REF  TO WS-CASHAMOUNT
+                   END-IF
+                 END-IF
+              END-IF
+            ELSE
+               INSPECT CASHAMOUNTI REPLACING ALL SPACES BY '_'
+               MOVE WS-CCPUR06              TO MESSAGEO
+               MOVE DFHUNIMD                TO CASHAMOUNTA
+                                               PAISECUA
+               MOVE -1                      TO CASHAMOUNTL
+           END-IF
+
+           IF MESSAGEO = SPACES
+              PERFORM 5131-SEL-CARD
+                 THRU 5131-SEL-CARD-EXIT
+           END-IF
+
+           MOVE DFHBMPRF                    TO BASICCDA
+                                               ADDONCDA
+                                               SLCASHA
+                                               SLPOSA
+                                               SLONLINA.
+
+       5130-VALIDATE-CASH-EXIT.
+           EXIT.
+
+      */******************  SELECT CARD TYPE  *************************/
+       5131-SEL-CARD.
+
+           IF BASICCDI = 'S' AND (ADDONCDI = ' ' OR ADDONCDI = '_')
+              MOVE LS-SCR-BASICRD      TO LS-SCR-CARD-NO
+           END-IF
+
+           IF ADDONCDI = 'S' AND (BASICCDI = ' ' OR BASICCDI = '_')
+              MOVE LS-SCR-SUPPCRD      TO LS-SCR-CARD-NO
+           END-IF
+
+           EXEC SQL
+                SELECT   AVL_CASH_LIMIT
+                  INTO  :AVL-CASH-LIMIT
+                  FROM   TUTORIAL.CARD
+                 WHERE   CUST_ID = :LS-SCR-CUST-ID
+                   AND   CARD_NO = :LS-SCR-CARD-NO
+           END-EXEC.
+
+           EVALUATE SQLCODE
+               WHEN 0
+                    IF AVL-CASH-LIMIT >= WS-CASHAMOUNT
+                       COMPUTE AVL-CASH-LIMIT = AVL-CASH-LIMIT
+                                                  - WS-CASHAMOUNT
+                       IF EIBAID = DFHENTER
+                          MOVE WS-CCPUR14   TO MESSAGEO
+                          MOVE 3            TO LS-ENTER-IND
+                       END-IF
+                    ELSE
+                       MOVE 'INSUFFICIENT BALANCE' TO MESSAGEO
+                    END-IF
+               WHEN OTHER
+                    MOVE 'ERROR IN SELECT CARD S2000' TO MESSAGEO
+                     MOVE DFHUNIMD                    TO MESSAGEA
+           END-EVALUATE.
+
+       5131-SEL-CARD-EXIT.
+           EXIT.
+
+      *******  VALIDATE FOR POS AND ONLINE PROCESSES   *****************
+       5210-VALIDATE-SELECT.
+
+            PERFORM 5211-PRODUCT-INFO
+               THRU 5211-PRODUCT-INFO-EXIT
+
+            IF SQLCODE = 0
+               MOVE DFHBMFSE           TO SEL1A   QUAN1A  MERCHNMA
+                                          SEL2A   QUAN2A
+                                          SEL3A   QUAN3A
+                                          SEL4A   QUAN4A
+                                          SEL5A   QUAN5A
+                                          SEL6A   QUAN6A
+                                          SEL7A   QUAN7A
+               MOVE -1                 TO SEL1L
+            END-IF.
+
+       5210-VALIDATE-SELECT-EXIT.
+           EXIT.
+
+      ********  CURSOR FOR PRODUCT INFORMATION    **********************
+       5211-PRODUCT-INFO.
+
+           PERFORM 5212-OPEN-CUR1
+              THRU 5212-OPEN-CUR1-EXIT
+
+           IF MESSAGEO = SPACES
+              PERFORM 5213-FETCH-CUR1
+                 THRU 5213-FETCH-CUR1-EXIT UNTIL  WS-EOF-CUR1 = 'Y'
+           END-IF
+
+           IF MESSAGEO = SPACES
+              PERFORM 5214-CLOSE-CUR1
+                 THRU 5214-CLOSE-CUR1-EXIT
+           END-IF.
+
+       5211-PRODUCT-INFO-EXIT.
+           EXIT.
+
+      *******  OPEN THE CURSOR1   >>>>>>
+       5212-OPEN-CUR1.
+           EXEC SQL
+                OPEN CUR1
+           END-EXEC
+
+           EVALUATE SQLCODE
+               WHEN 0
+                    CONTINUE
+               WHEN OTHER
+                    MOVE 'ERROR IN OPEN CUR1' TO MESSAGEO
+                    PERFORM 9000-ABEND-CALL
+                       THRU 9000-ABEND-CALL-EXIT
+           END-EVALUATE.
+
+       5212-OPEN-CUR1-EXIT.
+           EXIT.
+
+      *******  FETCH CURSOR1  >>>>
+       5213-FETCH-CUR1.
+
+           EXEC SQL
+                FETCH CUR1
+                INTO   :WS-PROD-ID
+                      ,:WS-PROD-NAME
+                      ,:PROD-PRICE
+           END-EXEC
+
+           EVALUATE SQLCODE
+               WHEN 0
+                    ADD 1                        TO WS-COUNT-CUR1
+                    MOVE PROD-PRICE              TO WS-PROD-PRICE-N
+                    MOVE WS-BEFORE-DECI          TO WS-BEFORE-DEC
+                    MOVE WS-AFTER-DECI           TO WS-AFTER-DEC
+                    PERFORM 5215-DISPLAY-LIST
+                       THRU 5215-DISPLAY-LIST-EXIT
+
+               WHEN +100
+                    MOVE 'Y'                     TO WS-EOF-CUR1
+               WHEN OTHER
+                    MOVE 'ERROR IN FETCH CUR1'   TO MESSAGEO
+                    MOVE -1                      TO MESSAGEL
+                    MOVE DFHUNIMD                TO MESSAGEA
+           END-EVALUATE.
+
+       5213-FETCH-CUR1-EXIT.
+           EXIT.
+
+      *****  CURSOR 1 CLOSE  >>>>>
+       5214-CLOSE-CUR1.
+
+           EXEC SQL
+                CLOSE CUR1
+           END-EXEC
+
+           EVALUATE SQLCODE
+               WHEN 0
+                    CONTINUE
+               WHEN OTHER
+                    MOVE 'ERROR IN CLOSE CUR1'   TO MESSAGEO
+                    PERFORM 9000-ABEND-CALL
+                       THRU 9000-ABEND-CALL-EXIT
+           END-EVALUATE.
+
+       5214-CLOSE-CUR1-EXIT.
+           EXIT.
+
+      ****** LIST ALL THE PRODUCTS   >>>>>
+       5215-DISPLAY-LIST.
+
+           IF WS-COUNT-CUR1 = 1
+              MOVE PROD-PRICE          TO LS-PROD-PRICE-1
+              MOVE WS-PROD-ID          TO PROID1O
+                                          LS-PROD-ID1
+              MOVE WS-PROD-NAME        TO PRONM1O
+              MOVE WS-PROD-PRICE-CHAR  TO PRIC1O
+              MOVE '01'                TO SL1O
+           END-IF
+
+           IF WS-COUNT-CUR1 = 2
+              MOVE PROD-PRICE          TO LS-PROD-PRICE-2
+              MOVE WS-PROD-ID          TO PROID2O
+                                          LS-PROD-ID2
+              MOVE WS-PROD-NAME        TO PRONM2O
+              MOVE WS-PROD-PRICE-CHAR  TO PRIC2O
+              MOVE '02'                TO SL2O
+           END-IF
+
+           IF WS-COUNT-CUR1 = 3
+              MOVE PROD-PRICE          TO LS-PROD-PRICE-3
+              MOVE WS-PROD-ID          TO PROID3O
+                                          LS-PROD-ID3
+              MOVE WS-PROD-NAME        TO PRONM3O
+              MOVE WS-PROD-PRICE-CHAR  TO PRIC3O
+              MOVE '03'                TO SL3O
+           END-IF
+
+           IF WS-COUNT-CUR1 = 4
+              MOVE PROD-PRICE          TO LS-PROD-PRICE-4
+              MOVE WS-PROD-ID          TO PROID4O
+                                          LS-PROD-ID4
+              MOVE WS-PROD-NAME        TO PRONM4O
+              MOVE WS-PROD-PRICE-CHAR  TO PRIC4O
+              MOVE '04'                TO SL4O
+           END-IF
+
+           IF WS-COUNT-CUR1 = 5
+              MOVE PROD-PRICE          TO LS-PROD-PRICE-5
+              MOVE WS-PROD-ID          TO PROID5O
+                                          LS-PROD-ID5
+              MOVE WS-PROD-NAME        TO PRONM5O
+              MOVE WS-PROD-PRICE-CHAR  TO PRIC5O
+              MOVE '05'                TO SL5O
+           END-IF
+
+           IF WS-COUNT-CUR1 = 6
+              MOVE PROD-PRICE          TO LS-PROD-PRICE-6
+              MOVE WS-PROD-ID          TO PROID6O
+                                          LS-PROD-ID6
+              MOVE WS-PROD-NAME        TO PRONM6O
+              MOVE WS-PROD-PRICE-CHAR  TO PRIC6O
+              MOVE '06'                TO SL6O
+           END-IF
+
+           IF WS-COUNT-CUR1 = 7
+              MOVE PROD-PRICE          TO LS-PROD-PRICE-7
+              MOVE WS-PROD-ID          TO PROID7O
+                                          LS-PROD-ID7
+              MOVE WS-PROD-NAME        TO PRONM7O
+              MOVE WS-PROD-PRICE-CHAR  TO PRIC7O
+              MOVE '07'                TO SL7O
+           END-IF.
+
+       5215-DISPLAY-LIST-EXIT.
+           EXIT.
+
+      ******  VALIDATE THE PRODUCTS AND THE QUANTITY    ****************
+       5140-PRODUCT-VALIDATE.
+
+           IF (SEL1I NOT = SPACES AND LOW-VALUES AND '_')
+               IF SEL1I NOT = 'S'
+                  MOVE WS-CCPUR01      TO MESSAGEO
+                  MOVE DFHUNIMD        TO SEL1A
+                  MOVE -1              TO SEL1L
+               END-IF
+           END-IF
+
+           IF MESSAGEO = SPACES
+              IF (SEL2I NOT = SPACES AND LOW-VALUES AND '_')
+                  IF SEL2I NOT = 'S'
+                     MOVE WS-CCPUR01   TO MESSAGEO
+                     MOVE DFHUNIMD     TO SEL2A
+                     MOVE -1           TO SEL2L
+                  END-IF
+              END-IF
+           END-IF
+
+           IF MESSAGEO = SPACES
+              IF (SEL3I NOT = SPACES AND LOW-VALUES AND '_')
+                  IF SEL3I NOT = 'S'
+                     MOVE WS-CCPUR01   TO MESSAGEO
+                     MOVE DFHUNIMD     TO SEL3A
+                     MOVE -1           TO SEL3L
+                  END-IF
+              END-IF
+           END-IF
+
+           IF MESSAGEO = SPACES
+              IF (SEL4I NOT = SPACES AND LOW-VALUES AND '_')
+                  IF SEL4I NOT = 'S'
+                     MOVE WS-CCPUR01   TO MESSAGEO
+                     MOVE DFHUNIMD     TO SEL4A
+                     MOVE -1           TO SEL4L
+                  END-IF
+              END-IF
+           END-IF
+
+           IF MESSAGEO = SPACES
+              IF (SEL5I NOT = SPACES AND LOW-VALUES AND '_')
+                  IF SEL5I NOT = 'S'
+                     MOVE WS-CCPUR01   TO MESSAGEO
+                     MOVE DFHUNIMD     TO SEL5A
+                     MOVE -1           TO SEL5L
+                  END-IF
+              END-IF
+           END-IF
+
+           IF MESSAGEO = SPACES
+              IF (SEL6I NOT = SPACES AND LOW-VALUES AND '_')
+                  IF SEL6I NOT = 'S'
+                     MOVE WS-CCPUR01   TO MESSAGEO
+                     MOVE DFHUNIMD     TO SEL6A
+                     MOVE -1           TO SEL6L
+                  END-IF
+              END-IF
+           END-IF
+
+           IF MESSAGEO = SPACES
+              IF (SEL7I NOT = SPACES AND LOW-VALUES AND '_')
+                  IF SEL7I NOT = 'S'
+                     MOVE WS-CCPUR01   TO MESSAGEO
+                     MOVE DFHUNIMD     TO SEL7A
+                     MOVE -1           TO SEL7L
+                  END-IF
+              END-IF
+           END-IF.
+
+       5140-PRODUCT-VALIDATE-EXIT.
+           EXIT.
+
+      *********   VALIDATE THE SELECTED PRODUCTS FOR QUANTITY **********
+       5150-VALIDATE-QUANTITY.
+
+           PERFORM 6200-VALIDATE-SELECT
+              THRU 6200-VALIDATE-SELECT-EXIT
+
+           IF MESSAGEO = SPACES
+              IF SEL1I = 'S'
+                 MOVE QUAN1I                TO WS-QUANTITY
+
+                 PERFORM 5151-VALIDATE-SELECTION
+                    THRU 5151-VALIDATE-SELECTION-EXIT
+
+                 IF MESSAGEO > SPACES
+                    MOVE DFHUNIMD           TO QUAN1A
+                    MOVE -1                 TO QUAN1L
+
+                 END-IF
+
+                 IF MESSAGEO = SPACES
+                    MOVE WS-QUAN            TO WS-QUAN1
+                    IF  WS-QUAN1 IS NUMERIC
+                       COMPUTE WS-PRICE1 = WS-QUAN1 * LS-PROD-PRICE-1
+                    ELSE
+                       MOVE 'ERROR IN COMPUTING FOR SEL1'  TO MESSAGEO
+                    END-IF
+
+                    IF EIBAID = DFHPF5 AND MESSAGEO = SPACES
+                       MOVE WS-QUAN         TO PROD-QTY
+                       MOVE PRONM1O         TO WS-PROD-NAME
+                       MOVE WS-PRICE1       TO PURCHASE-AMT
+                       MOVE LS-PROD-ID1     TO WS-PROD-ID
+
+                       IF LS-ENTER-IND = 3
+                          PERFORM 5312-INS-PURCHASE
+                             THRU 5312-INS-PURCHASE-EXIT
+                       END-IF
+                    END-IF
+                 END-IF
+              END-IF
+           END-IF
+
+           IF MESSAGEO = SPACES
+              IF SEL2I = 'S'
+                 MOVE QUAN2I                TO WS-QUANTITY
+
+                 PERFORM 5151-VALIDATE-SELECTION
+                    THRU 5151-VALIDATE-SELECTION-EXIT
+
+                 IF MESSAGEO > SPACES
+                    MOVE DFHUNIMD           TO QUAN2A
+                    MOVE -1                 TO QUAN2L
+
+                 END-IF
+
+                 IF MESSAGEO = SPACES
+                    MOVE WS-QUAN            TO WS-QUAN2
+                    IF  WS-QUAN2 IS NUMERIC
+                       COMPUTE WS-PRICE2 = WS-QUAN2 * LS-PROD-PRICE-2
+                    ELSE
+                       MOVE 'ERROR IN COMPUTING FOR SEL2'  TO MESSAGEO
+                    END-IF
+
+                    IF EIBAID = DFHPF5 AND MESSAGEO = SPACES
+                       MOVE WS-QUAN         TO PROD-QTY
+                       MOVE PRONM2O         TO WS-PROD-NAME
+                       MOVE WS-PRICE2       TO PURCHASE-AMT
+                       MOVE LS-PROD-ID2     TO WS-PROD-ID
+
+                       IF LS-ENTER-IND = 3
+                          PERFORM 5312-INS-PURCHASE
+                             THRU 5312-INS-PURCHASE-EXIT
+                       END-IF
+                    END-IF
+                 END-IF
+              END-IF
+           END-IF
+
+           IF MESSAGEO = SPACES
+              IF SEL3I = 'S'
+                 MOVE QUAN3I                TO WS-QUANTITY
+
+                 PERFORM 5151-VALIDATE-SELECTION
+                    THRU 5151-VALIDATE-SELECTION-EXIT
+
+                 IF MESSAGEO > SPACES
+                    MOVE DFHUNIMD           TO QUAN3A
+                    MOVE -1                 TO QUAN3L
+
+                 END-IF
+
+                 IF MESSAGEO = SPACES
+                    MOVE WS-QUAN            TO WS-QUAN3
+                    IF  WS-QUAN3 IS NUMERIC
+                       COMPUTE WS-PRICE3 = WS-QUAN3 * LS-PROD-PRICE-3
+                    ELSE
+                       MOVE 'ERROR IN COMPUTING FOR SEL3'  TO MESSAGEO
+                    END-IF
+
+                    IF EIBAID = DFHPF5 AND MESSAGEO = SPACES
+                       MOVE WS-QUAN         TO PROD-QTY
+                       MOVE PRONM3O         TO WS-PROD-NAME
+                       MOVE WS-PRICE3       TO PURCHASE-AMT
+                       MOVE LS-PROD-ID3     TO WS-PROD-ID
+
+                       IF LS-ENTER-IND = 3
+                          PERFORM 5312-INS-PURCHASE
+                             THRU 5312-INS-PURCHASE-EXIT
+                       END-IF
+                    END-IF
+                 END-IF
+              END-IF
+           END-IF
+
+           IF MESSAGEO = SPACES
+              IF SEL4I = 'S'
+                 MOVE QUAN4I                TO WS-QUANTITY
+
+                 PERFORM 5151-VALIDATE-SELECTION
+                    THRU 5151-VALIDATE-SELECTION-EXIT
+
+                 IF MESSAGEO > SPACES
+                    MOVE DFHUNIMD           TO QUAN4A
+                    MOVE -1                 TO QUAN4L
+
+                 END-IF
+
+                 IF MESSAGEO = SPACES
+                    MOVE WS-QUAN            TO WS-QUAN4
+                    IF  WS-QUAN4 IS NUMERIC
+                       COMPUTE WS-PRICE4 = WS-QUAN4 * LS-PROD-PRICE-4
+                    ELSE
+                       MOVE 'ERROR IN COMPUTING FOR SEL4'  TO MESSAGEO
+                    END-IF
+
+                    IF EIBAID = DFHPF5 AND MESSAGEO = SPACES
+                       MOVE WS-QUAN         TO PROD-QTY
+                       MOVE PRONM4O         TO WS-PROD-NAME
+                       MOVE WS-PRICE4       TO PURCHASE-AMT
+                       MOVE LS-PROD-ID4     TO WS-PROD-ID
+
+                       IF LS-ENTER-IND = 3
+                          PERFORM 5312-INS-PURCHASE
+                             THRU 5312-INS-PURCHASE-EXIT
+                       END-IF
+                    END-IF
+                 END-IF
+              END-IF
+           END-IF
+
+           IF MESSAGEO = SPACES
+              IF SEL5I = 'S'
+                 MOVE QUAN5I                TO WS-QUANTITY
+
+                 PERFORM 5151-VALIDATE-SELECTION
+                    THRU 5151-VALIDATE-SELECTION-EXIT
+
+                 IF MESSAGEO > SPACES
+                    MOVE DFHUNIMD           TO QUAN5A
+                    MOVE -1                 TO QUAN5L
+
+                 END-IF
+
+                 IF MESSAGEO = SPACES
+                    MOVE WS-QUAN            TO WS-QUAN5
+                    IF  WS-QUAN5 IS NUMERIC
+                       COMPUTE WS-PRICE5 = WS-QUAN5 * LS-PROD-PRICE-5
+                    ELSE
+                       MOVE 'ERROR IN COMPUTING FOR SEL5'  TO MESSAGEO
+                    END-IF
+
+                    IF EIBAID = DFHPF5 AND MESSAGEO = SPACES
+                       MOVE WS-QUAN         TO PROD-QTY
+                       MOVE PRONM5O         TO WS-PROD-NAME
+                       MOVE WS-PRICE5       TO PURCHASE-AMT
+                       MOVE LS-PROD-ID5     TO WS-PROD-ID
+
+                       IF LS-ENTER-IND = 3
+                          PERFORM 5312-INS-PURCHASE
+                             THRU 5312-INS-PURCHASE-EXIT
+                       END-IF
+                    END-IF
+                 END-IF
+              END-IF
+           END-IF
+
+           IF MESSAGEO = SPACES
+              IF SEL6I = 'S'
+                 MOVE QUAN6I                TO WS-QUANTITY
+
+                 PERFORM 5151-VALIDATE-SELECTION
+                    THRU 5151-VALIDATE-SELECTION-EXIT
+
+                 IF MESSAGEO > SPACES
+                    MOVE DFHUNIMD           TO QUAN6A
+                    MOVE -1                 TO QUAN6L
+
+                 END-IF
+
+                 IF MESSAGEO = SPACES
+                    MOVE WS-QUAN            TO WS-QUAN6
+                    IF  WS-QUAN6 IS NUMERIC
+                       COMPUTE WS-PRICE6 = WS-QUAN6 * LS-PROD-PRICE-6
+                    ELSE
+                       MOVE 'ERROR IN COMPUTING FOR SEL6'  TO MESSAGEO
+                    END-IF
+
+                    IF EIBAID = DFHPF5 AND MESSAGEO = SPACES
+                       MOVE WS-QUAN         TO PROD-QTY
+                       MOVE PRONM6O         TO WS-PROD-NAME
+                       MOVE WS-PRICE6       TO PURCHASE-AMT
+                       MOVE LS-PROD-ID6     TO WS-PROD-ID
+
+                       IF LS-ENTER-IND = 3
+                          PERFORM 5312-INS-PURCHASE
+                             THRU 5312-INS-PURCHASE-EXIT
+                       END-IF
+                    END-IF
+                 END-IF
+              END-IF
+           END-IF
+
+           IF MESSAGEO = SPACES
+              IF SEL7I = 'S'
+                 MOVE QUAN7I                TO WS-QUANTITY
+
+                 PERFORM 5151-VALIDATE-SELECTION
+                    THRU 5151-VALIDATE-SELECTION-EXIT
+
+                 IF MESSAGEO > SPACES
+                    MOVE DFHUNIMD           TO QUAN7A
+                    MOVE -1                 TO QUAN7L
+
+                 END-IF
+
+                 IF MESSAGEO = SPACES
+                    MOVE WS-QUAN            TO WS-QUAN7
+                    IF  WS-QUAN7 IS NUMERIC
+                       COMPUTE WS-PRICE7 = WS-QUAN7 * LS-PROD-PRICE-7
+                    ELSE
+                       MOVE 'ERROR IN COMPUTING FOR SEL7'  TO MESSAGEO
+                    END-IF
+
+                    IF EIBAID = DFHPF5 AND MESSAGEO = SPACES
+                       MOVE WS-QUAN         TO PROD-QTY
+                       MOVE PRONM7O         TO WS-PROD-NAME
+                       MOVE WS-PRICE7       TO PURCHASE-AMT
+                       MOVE LS-PROD-ID7     TO WS-PROD-ID
+
+                       IF LS-ENTER-IND = 3
+                          PERFORM 5312-INS-PURCHASE
+                             THRU 5312-INS-PURCHASE-EXIT
+                       END-IF
+                    END-IF
+                 END-IF
+              END-IF
+           END-IF
+
+           IF MESSAGEO = SPACES
+              IF (MERCHNMI = SPACES OR LOW-VALUES
+                                    OR '____________________')
+                 MOVE WS-CCPUR18       TO MESSAGEO
+                 MOVE ALL '_'          TO MERCHNMO
+              END-IF
+
+              IF MESSAGEO = SPACES
+                 PERFORM 5152-COMPUTE-PRICE
+                    THRU 5152-COMPUTE-PRICE-EXIT
+
+                 MOVE MERCHNMI         TO LS-MERCHANT
+                 INSPECT LS-MERCHANT REPLACING ALL '_' BY SPACES
+
+                 MOVE LS-MERCHANT      TO MERCHNMO
+                 PERFORM 6100-FILL-UNDERSCORES
+                    THRU 6100-FILL-UNDERSCORES-EXIT
+
+              ELSE
+                 MOVE -1               TO MERCHNML
+                 MOVE DFHUNIMD         TO MERCHNMA
+                 MOVE DFHBMPRF         TO SEL1A QUAN1A
+                                          SEL2A QUAN2A
+                                          SEL3A QUAN3A
+                                          SEL4A QUAN4A
+                                          SEL5A QUAN5A
+                                          SEL6A QUAN6A
+                                          SEL7A QUAN7A
+                 PERFORM 6100-FILL-UNDERSCORES
+                    THRU 6100-FILL-UNDERSCORES-EXIT
+              END-IF
+
+           ELSE
+              MOVE DFHBMFSE            TO SEL1A QUAN1A MERCHNMA
+                                          SEL2A QUAN2A
+                                          SEL3A QUAN3A
+                                          SEL4A QUAN4A
+                                          SEL5A QUAN5A
+                                          SEL6A QUAN6A
+                                          SEL7A QUAN7A
+              PERFORM 6100-FILL-UNDERSCORES
+                 THRU 6100-FILL-UNDERSCORES-EXIT
+           END-IF.
+
+       5150-VALIDATE-QUANTITY-EXIT.
+           EXIT.
+
+      *********   VALIDATE THE SELECTED PRODUCTS FOR QUANTITY **********
+       5151-VALIDATE-SELECTION.
+
+           MOVE 'N'                    TO WS-NUM-FND
+           MOVE 'N'                    TO WS-CHAR-FND
+           MOVE 'N'                    TO WS-SPACE-FND
+           MOVE 'N'                    TO WS-SPACE-IND
+
+           INSPECT WS-QUANTITY REPLACING ALL '_' BY SPACES
+
+           IF (WS-QUANTITY = SPACES OR LOW-VALUES OR '___')
+              MOVE WS-CCPUR16          TO MESSAGEO
+           END-IF
+
+           IF MESSAGEO = SPACES
+              INSPECT WS-QUANTITY TALLYING WS-COUNT FOR ALL '.'
+              INSPECT WS-QUANTITY TALLYING WS-COUNT FOR ALL ','
+              IF WS-COUNT > 0
+                 MOVE WS-CCPUR17       TO MESSAGEO
+              END-IF
+
+              IF MESSAGEO =SPACES
+                 PERFORM VARYING WS-I FROM 1 BY 1
+                         UNTIL WS-CHAR-FND = 'Y'
+                         OR WS-I = 3
+                  IF WS-QUANTITY(WS-I:1) > SPACE
+                     IF (WS-QUANTITY(WS-I:1) IS NOT NUMERIC)
+                       MOVE 'Y'        TO WS-CHAR-FND
+                     ELSE
+                       MOVE 'Y'        TO WS-NUM-FND
+                       IF WS-SPACE-IND = 'Y'
+                          MOVE 'Y'     TO WS-SPACE-FND
+                       END-IF
+                     END-IF
+                  ELSE
+                     IF WS-NUM-FND = 'Y'
+                        MOVE 'Y'       TO WS-SPACE-IND
+                     END-IF
+                  END-IF
+                 END-PERFORM
+
+                 IF WS-CHAR-FND = 'Y'
+                    MOVE WS-CCPUR12    TO MESSAGEO
+                 ELSE
+                    IF WS-SPACE-FND = 'Y'
+                       MOVE WS-CCPUR08 TO MESSAGEO
+                    ELSE
+                       COMPUTE WS-QUAN =
+                         FUNCTION NUMVAL-C (WS-QUANTITY)
+                    END-IF
+                 END-IF
+              END-IF
+           END-IF.
+
+       5151-VALIDATE-SELECTION-EXIT.
+           EXIT.
+
+      ******* COMPUTE THE QUANTITY AND PRICE   *************************
+       5152-COMPUTE-PRICE.
+
+           COMPUTE WS-PRICE-TOT =      WS-PRICE1 + WS-PRICE2 +
+                                       WS-PRICE3 + WS-PRICE4 +
+                                       WS-PRICE5 + WS-PRICE6 +
+                                       WS-PRICE7
+
+           COMPUTE WS-QUAN-TOT =       WS-QUAN1  + WS-QUAN2  +
+                                       WS-QUAN3  + WS-QUAN4  +
+                                       WS-QUAN5  + WS-QUAN6  +
+                                       WS-QUAN7
+           MOVE WS-PRICE-TOT           TO WS-PROD-PRICE-N
+           MOVE WS-BEFORE-DECI         TO WS-BEFORE-DEC
+           MOVE WS-AFTER-DECI          TO WS-AFTER-DEC
+           MOVE WS-PRICE-TOT           TO WS-CASHAMOUNT
+           MOVE WS-QUAN-TOT            TO TQUANO
+           MOVE WS-PROD-PRICE-CHAR     TO TAMOUNTO
+
+           PERFORM 5131-SEL-CARD
+              THRU 5131-SEL-CARD-EXIT
+
+           IF MESSAGEO NOT = WS-CCPUR14
+              MOVE DFHBMPRF            TO BASICCDA
+                                          ADDONCDA
+                                          SLCASHA
+                                          SLPOSA
+                                          SLONLINA
+              MOVE -1                  TO SEL1L
+              MOVE DFHBMFSE            TO SEL1A QUAN1A MERCHNMA
+                                          SEL2A QUAN2A
+                                          SEL3A QUAN3A
+                                          SEL4A QUAN4A
+                                          SEL5A QUAN5A
+                                          SEL6A QUAN6A
+                                          SEL7A QUAN7A
+           ELSE
+              MOVE DFHBMPRF            TO BASICCDA
+                                          ADDONCDA
+                                          SLCASHA
+                                          SLPOSA
+                                          SLONLINA
+                                          SEL1A QUAN1A MERCHNMA
+                                          SEL2A QUAN2A
+                                          SEL3A QUAN3A
+                                          SEL4A QUAN4A
+                                          SEL5A QUAN5A
+                                          SEL6A QUAN6A
+                                          SEL7A QUAN7A
+           END-IF.
+
+       5152-COMPUTE-PRICE-EXIT.
+           EXIT.
+
+
+      ******* VALIDATE WHEN ID NOT SELECTED FOR QUANTITY   *************
+       6200-VALIDATE-SELECT.
+
+           PERFORM 5140-PRODUCT-VALIDATE
+              THRU 5140-PRODUCT-VALIDATE-EXIT
+
+           IF MESSAGEO = SPACES
+              MOVE QUAN1I                 TO WS-QUANTITY
+              INSPECT WS-QUANTITY REPLACING ALL '_' BY SPACES
+              IF WS-QUANTITY > SPACES AND SEL1I NOT = 'S'
+                 MOVE 'PLEASE SELECT THE PRODUCT-1 FOR QUANTITY'
+                                       TO MESSAGEO
+                 MOVE DFHUNIMD         TO SEL1A
+                 MOVE -1               TO SEL1L
+              END-IF
+           END-IF
+
+           IF MESSAGEO = SPACES
+              MOVE QUAN2I              TO WS-QUANTITY
+              INSPECT WS-QUANTITY REPLACING ALL '_' BY SPACES
+              IF WS-QUANTITY > SPACES AND SEL2I NOT = 'S'
+                  MOVE 'PLEASE SELECT THE PRODUCT-2 FOR QUANTITY'
+                                       TO MESSAGEO
+                  MOVE DFHUNIMD        TO SEL2A
+                  MOVE -1              TO SEL2L
+              END-IF
+           END-IF
+
+           IF MESSAGEO = SPACES
+              MOVE QUAN3I              TO WS-QUANTITY
+              INSPECT WS-QUANTITY REPLACING ALL '_' BY SPACES
+              IF WS-QUANTITY > SPACES AND SEL3I NOT = 'S'
+                 MOVE 'PLEASE SELECT THE PRODUCT-3 FOR QUANTITY'
+                                       TO MESSAGEO
+                 MOVE DFHUNIMD         TO SEL3A
+                 MOVE -1               TO SEL3L
+              END-IF
+           END-IF
+
+           IF MESSAGEO = SPACES
+              MOVE QUAN4I              TO WS-QUANTITY
+              INSPECT WS-QUANTITY REPLACING ALL '_' BY SPACES
+              IF WS-QUANTITY > SPACES AND SEL4I NOT = 'S'
+                 MOVE 'PLEASE SELECT THE PRODUCT-4 FOR QUANTITY'
+                                       TO MESSAGEO
+                 MOVE DFHUNIMD         TO SEL4A
+                 MOVE -1               TO SEL4L
+              END-IF
+           END-IF
+
+           IF MESSAGEO = SPACES
+              MOVE QUAN5I              TO WS-QUANTITY
+              INSPECT WS-QUANTITY REPLACING ALL '_' BY SPACES
+              IF WS-QUANTITY > SPACES AND SEL5I NOT = 'S'
+                 MOVE 'PLEASE SELECT THE PRODUCT-5 FOR QUANTITY'
+                                       TO MESSAGEO
+                 MOVE DFHUNIMD         TO SEL5A
+                 MOVE -1               TO SEL5L
+              END-IF
+           END-IF
+
+           IF MESSAGEO = SPACES
+              MOVE QUAN6I              TO WS-QUANTITY
+              INSPECT WS-QUANTITY REPLACING ALL '_' BY SPACES
+              IF WS-QUANTITY > SPACES AND SEL6I NOT = 'S'
+                 MOVE 'PLEASE SELECT THE PRODUCT-6 FOR QUANTITY'
+                                       TO MESSAGEO
+                 MOVE DFHUNIMD         TO SEL6A
+                 MOVE -1               TO SEL6L
+              END-IF
+           END-IF
+
+           IF MESSAGEO = SPACES
+              MOVE QUAN7I              TO WS-QUANTITY
+              INSPECT WS-QUANTITY REPLACING ALL '_' BY SPACES
+              IF WS-QUANTITY > SPACES AND SEL7I NOT = 'S'
+                 MOVE 'PLEASE SELECT THE PRODUCT-7 FOR QUANTITY'
+                                       TO MESSAGEO
+                 MOVE DFHUNIMD         TO SEL7A
+                 MOVE -1               TO SEL7L
+              END-IF
+           END-IF
+
+           MOVE DFHBMPRF               TO BASICCDA
+                                          ADDONCDA
+                                          SLCASHA
+                                          SLPOSA
+                                          SLONLINA
+
+           IF MESSAGEO > SPACES OR EIBAID = DFHENTER
+              MOVE DFHBMFSE            TO SEL1A QUAN1A MERCHNMA
+                                          SEL2A QUAN2A
+                                          SEL3A QUAN3A
+                                          SEL4A QUAN4A
+                                          SEL5A QUAN5A
+                                          SEL6A QUAN6A
+                                          SEL7A QUAN7A
+
+              PERFORM 6100-FILL-UNDERSCORES
+                 THRU 6100-FILL-UNDERSCORES-EXIT
+           END-IF.
+
+
+       6200-VALIDATE-SELECT-EXIT.
+           EXIT.
+
+      ******************************************************************
+      *    WHEN FUNCTION KEY PF3 AND PF12 ARE PRESSED   >>>>
+      ******************************************************************
+       5200-VALIDATE-LINK.
+
+           EXEC CICS
+                XCTL
+                PROGRAM('WS-LINK-PGM')
+                COMMAREA(DFHCOMMAREA)
+                NOHANDLE
+           END-EXEC.
+
+       5200-VALIDATE-LINK-EXIT.
+           EXIT.
+
+      ******************************************************************
+      *    WHEN FUNCTION KEY5 IS PRESSED - FOR UPDATE  >>>>
+      ******************************************************************
+       5300-VALIDATE-PF5.
+
+           IF LS-ENTER-IND = 3
+              IF SLCASHI = 'S'
+                 PERFORM  5130-VALIDATE-CASH
+                    THRU  5130-VALIDATE-CASH-EXIT
+
+              ELSE
+                 IF (SLPOSI = 'S' OR SLONLINI = 'S')
+                    PERFORM 5150-VALIDATE-QUANTITY
+                       THRU 5150-VALIDATE-QUANTITY-EXIT
+                 END-IF
+              END-IF
+
+              IF MESSAGEO = SPACES
+                 PERFORM  5310-UPDATE-CASH
+                    THRU  5310-UPDATE-CASH-EXIT
+              END-IF
+           ELSE
+              PERFORM 5600-VALIDATE-OTHER
+                 THRU 5600-VALIDATE-OTHER-EXIT
+           END-IF.
+
+       5300-VALIDATE-PF5-EXIT.
+           EXIT.
+
+      ********** UPDATE LOGIC  *****************************************
+       5310-UPDATE-CASH.
+
+           PERFORM  5311-UPD-CARD
+              THRU  5311-UPD-CARD-EXIT
+
+           IF SQLCODE = 0
+              IF (BASICCDI = 'S' OR ADDONCDI = 'S')
+                 AND (SLCASHI = 'S' AND (SLPOSI = ' ' OR SLPOSI = '_')
+                                    AND (SLONLINI = ' '
+                                    OR  SLONLINI ='_'))
+                 PERFORM  5312-INS-PURCHASE
+                    THRU  5312-INS-PURCHASE-EXIT
+
+                 IF SQLCODE = 0
+                    PERFORM  5313-INS-TRANSACTION
+                       THRU  5313-INS-TRANSACTION-EXIT
+
+                    IF SQLCODE = 0 AND SLCASHI = 'S'
+                       MOVE DFHBMPRF                   TO CASHAMOUNTA
+                                                          PAISECUA
+                       MOVE 'CASH DEDECTED FROM CARD'  TO MESSAGEO
+                    END-IF
+                 END-IF
+              END-IF
+
+              IF SQLCODE = 0 AND (SLPOSI = 'S' OR SLONLINI = 'S')
+                 PERFORM  5313-INS-TRANSACTION
+                    THRU  5313-INS-TRANSACTION-EXIT
+
+                 MOVE DFHBMPRF         TO SEL1A QUAN1A SLONLINA
+                                          SEL2A QUAN2A SLPOSA
+                                          SEL3A QUAN3A BASICCDA
+                                          SEL4A QUAN4A ADDONCDA
+                                          SEL5A QUAN5A MERCHNMA
+                                          SEL6A QUAN6A
+                                          SEL7A QUAN7A
+                 MOVE WS-CCPUR10       TO MESSAGEO
+              END-IF
+           END-IF.
+
+       5310-UPDATE-CASH-EXIT.
+           EXIT.
+
+      ***********   UPDATE THE CARD TABLE  *****************************
+       5311-UPD-CARD.
+
+           IF BASICCDI = 'S' AND (ADDONCDI = ' ' OR ADDONCDI = '_')
+              MOVE LS-SCR-BASICRD      TO LS-SCR-CARD-NO
+
+           END-IF.
+
+           IF ADDONCDI = 'S' AND (BASICCDI = ' ' OR BASICCDI = '_')
+              MOVE LS-SCR-SUPPCRD      TO LS-SCR-CARD-NO
+
+           END-IF.
+
+           EXEC SQL
+                UPDATE  TUTORIAL.CARD
+                   SET  AVL_CASH_LIMIT = :AVL-CASH-LIMIT
+                 WHERE  CUST_ID = :LS-SCR-CUST-ID
+                   AND  CARD_NO = :LS-SCR-CARD-NO
+           END-EXEC.
+
+           EVALUATE SQLCODE
+               WHEN 0
+                    CONTINUE
+               WHEN 100
+                    MOVE WS-CCPUR13              TO MESSAGEO
+                    MOVE DFHUNIMD                TO MESSAGEA
+                    MOVE -1                      TO MESSAGEL
+               WHEN OTHER
+                    PERFORM 9000-ABEND-CALL
+                       THRU 9000-ABEND-CALL-EXIT
+           END-EVALUATE.
+
+       5311-UPD-CARD-EXIT.
+           EXIT.
+
+      ********  GET THE VALUES FOR INSERING INTO PURCHASE TABLE  *******
+       5315-PURCHASE-VALUES.
+
+           MOVE LS-USER-ID                       TO WS-USER-ID
+
+           IF (BASICCDI = 'S' OR ADDONCDI = 'S')
+              AND (SLPOSI = 'S' AND (SLCASHI = ' ' OR SLCASHI = '_')
+                                 AND (SLONLINI = ' '
+                                            OR SLONLINI ='_'))
+               MOVE 'POS'                        TO PURCHASE-MODE
+               MOVE 'PURCHASED DURING POS'       TO PURCHASE-DESC
+               MOVE 'PRODUCTS PURCHASED'         TO PURCHASE-DESC
+               MOVE LS-MERCHANT                  TO PUR-MERCHANT-NAME
+           END-IF
+
+           IF (BASICCDI = 'S' OR ADDONCDI = 'S')
+              AND (SLONLINI = 'S' AND (SLCASHI = ' ' OR SLCASHI = '_')
+                                 AND (SLPOSI = ' '
+                                            OR SLPOSI ='_'))
+               MOVE 'ONLINE'                     TO PURCHASE-MODE
+               MOVE 'PURCHASED DURING ONLINE'    TO PURCHASE-DESC
+               MOVE 'PRODUCTS PURCHASED'         TO PURCHASE-DESC
+               MOVE LS-MERCHANT                  TO PUR-MERCHANT-NAME
+           END-IF.
+
+       5315-PURCHASE-VALUES-EXIT.
+           EXIT.
+
+      ***********  INSERT THE A RECORD IN THE PURCHASE TABLE  **********
+       5312-INS-PURCHASE.
+
+           IF (BASICCDI = 'S' OR ADDONCDI = 'S')
+              AND (SLCASHI = 'S' AND (SLPOSI = ' ' OR SLPOSI = '_')
+                                 AND (SLONLINI = ' '
+                                 OR  SLONLINI ='_'))
+               MOVE 'CASH'                  TO PURCHASE-MODE
+               MOVE 'CASH'                  TO WS-PROD-NAME
+               MOVE 000000                  TO WS-PROD-ID
+               MOVE 1                       TO PROD-QTY
+               MOVE '1'                     TO TQUANO
+               MOVE 'CASH WITHDRAWAL'       TO PURCHASE-DESC
+               MOVE WS-CASHAMOUNT           TO PURCHASE-AMT
+               MOVE CASHAMOUNTI             TO TAMOUNTO
+               MOVE 'ATM-CASH WITHDRAWN'    TO MERCHNMO
+                                               PUR-MERCHANT-NAME
+           END-IF
+
+           PERFORM  5315-PURCHASE-VALUES
+              THRU  5315-PURCHASE-VALUES-EXIT
+
+           EXEC SQL
+                INSERT INTO TUTORIAL.PURCHASE
+                      (PURCHASE_ID,
+                      PROD_ID,
+                      PURCHASE_MODE,
+                      CUST_ID,
+                      CARD_NO,
+                      PROD_NAME,
+                      PROD_QTY,
+                      PURCHASE_TS,
+                      PUR_MERCHANT_NAME,
+                      PURCHASE_AMT,
+                      PURCHASE_DESC,
+                      PURCHASE_MADE_BY)
+                VALUES(DEFAULT,
+                      :WS-PROD-ID,
+                      :PURCHASE-MODE,
+                      :LS-SCR-CUST-ID,
+                      :LS-SCR-CARD-NO,
+                      :WS-PROD-NAME,
+                      :PROD-QTY,
+                       CURRENT TIMESTAMP,
+                      :PUR-MERCHANT-NAME,
+                      :PURCHASE-AMT,
+                      :PURCHASE-DESC,
+                      :LS-USER-ID)
+           END-EXEC
+
+           EVALUATE SQLCODE
+               WHEN 0
+                    CONTINUE
+               WHEN OTHER
+                    EXEC CICS
+                         SYNCPOINT ROLLBACK
+                    END-EXEC
+                    PERFORM 9000-ABEND-CALL
+                       THRU 9000-ABEND-CALL-EXIT
+
+           END-EVALUATE.
+
+       5312-INS-PURCHASE-EXIT.
+           EXIT.
+
+      *******  GET THE VALUES FOR INSERING INTO TRANSACTION TABLE  *****
+       5316-TRANSACTION-VALUES.
+
+           MOVE LS-USER-ID                  TO WS-USER-ID
+           MOVE 'DB'                        TO TRAN-TYPE
+
+           IF (BASICCDI = 'S' OR ADDONCDI = 'S')
+              AND (SLCASHI = 'S' AND (SLPOSI = ' ' OR SLPOSI = '_')
+                                 AND (SLONLINI = ' '
+                                            OR SLONLINI ='_'))
+              MOVE 'CASH'                   TO TRAN-MODE
+              MOVE PURCHASE-AMT             TO TRAN-AMT
+              MOVE 'CASH WITHDRAWAL'        TO TRAN-DESC
+              MOVE 'ATM-CASH WITHDRAWN'     TO MERCHNMO
+                                               TRAN-MERCHANT-NAME
+           END-IF
+
+           IF (BASICCDI = 'S' OR ADDONCDI = 'S')
+              AND (SLPOSI = 'S' AND (SLCASHI = ' ' OR SLCASHI = '_')
+                                AND (SLONLINI = ' '
+                                            OR SLONLINI ='_'))
+              MOVE 'POS'                    TO TRAN-MODE
+              MOVE WS-PRICE-TOT             TO TRAN-AMT
+              MOVE 'PURCHASED DURING POS'   TO TRAN-DESC
+              MOVE LS-MERCHANT              TO TRAN-MERCHANT-NAME
+           END-IF
+
+           IF (BASICCDI = 'S' OR ADDONCDI = 'S')
+              AND (SLONLINI = 'S' AND (SLCASHI = ' ' OR SLCASHI = '_')
+                                  AND (SLPOSI = ' '
+                                             OR SLPOSI ='_'))
+              MOVE 'ONLINE'                  TO TRAN-MODE
+              MOVE WS-PRICE-TOT              TO TRAN-AMT
+              MOVE 'PURCHASED DURING ONLINE' TO TRAN-DESC
+              MOVE LS-MERCHANT               TO TRAN-MERCHANT-NAME
+           END-IF.
+
+       5316-TRANSACTION-VALUES-EXIT.
+           EXIT.
+
+      ***********  INSERT THE A RECORD INTO TRANSACTION TABLE **********
+       5313-INS-TRANSACTION.
+
+           PERFORM  5316-TRANSACTION-VALUES
+              THRU  5316-TRANSACTION-VALUES-EXIT
+
+           EXEC SQL
+                INSERT INTO TUTORIAL.TUTORIAL.TRANSACTION
+                      (TRAN_ID,
+                       CUST_ID,
+                       CARD_NO,
+                       TRAN_AMT,
+                       TRAN_TS,
+                       TRAN_TYPE,
+                       TRAN_MODE,
+                       TRAN_MERCHANT_NAME,
+                       TRAN_DESC,
+                       TRAN_MADE_BY)
+                VALUES(DEFAULT,
+                      :LS-SCR-CUST-ID,
+                      :LS-SCR-CARD-NO,
+                      :TRAN-AMT,
+                      CURRENT TIMESTAMP,
+                      :TRAN-TYPE,
+                      :TRAN-MODE,
+                      :TRAN-MERCHANT-NAME,
+                      :TRAN-DESC,
+                      :LS-USER-ID)
+           END-EXEC
+
+           EVALUATE SQLCODE
+               WHEN 0
+                    CONTINUE
+               WHEN OTHER
+                    EXEC CICS
+                         SYNCPOINT ROLLBACK
+                    END-EXEC
+
+                    PERFORM 9000-ABEND-CALL
+                       THRU 9000-ABEND-CALL-EXIT
+           END-EVALUATE.
+
+       5313-INS-TRANSACTION-EXIT.
+           EXIT.
+
+      ******************************************************************
+      *    WHEN ESCAPE IS PRESSED - FOR CLEARING THE SCREEN  >>>>
+      ******************************************************************
+       5500-VALIDATE-CLEAR.
+
+            PERFORM 2000-CHECK-CUSTID
+               THRU 2000-CHECK-CUSTID-EXIT
+
+            IF MESSAGEO = SPACES
+               PERFORM 3000-CARD-INFO
+                  THRU 3000-CARD-INFO-EXIT
+            END-IF
+            MOVE -1                    TO BASICCDL.
+
+       5500-VALIDATE-CLEAR-EXIT.
+           EXIT.
+
+      ******************************************************************
+      *    WHEN SOME OTHER INVALID KEY IS PRESSED   >>>>
+      ******************************************************************
+       5600-VALIDATE-OTHER.
+
+           IF LS-ENTER-IND = 0
+              MOVE -1                  TO BASICCDL
+              MOVE WS-CCPUR11          TO MESSAGEO
+              MOVE DFHBMFSE            TO BASICCDA
+                                          ADDONCDA
+                                          SLCASHA
+                                          SLPOSA
+                                          SLONLINA
+           ELSE
+              IF LS-ENTER-IND = 1
+                 MOVE -1               TO CASHAMOUNTL
+                 MOVE WS-CCPUR11       TO MESSAGEO
+                 MOVE DFHBMFSE         TO CASHAMOUNTA
+                                          PAISECUA
+                 MOVE DFHBMPRF         TO BASICCDA
+                                          ADDONCDA
+                                          SLCASHA
+                                          SLPOSA
+                                          SLONLINA
+              ELSE
+                 IF LS-ENTER-IND = 2
+                    MOVE -1            TO SEL1L
+                    MOVE WS-CCPUR11    TO MESSAGEO
+                    MOVE DFHBMFSE      TO SEL1A   QUAN1A  MERCHNMA
+                                          SEL2A   QUAN2A
+                                          SEL3A   QUAN3A
+                                          SEL4A   QUAN4A
+                                          SEL5A   QUAN5A
+                                          SEL6A   QUAN6A
+                                          SEL7A   QUAN7A
+                    MOVE DFHBMPRF      TO BASICCDA
+                                          ADDONCDA
+                                          SLCASHA
+                                          SLPOSA
+                                          SLONLINA
+                 ELSE
+                    IF LS-ENTER-IND = 3
+                       MOVE -1         TO BASICCDL
+                       MOVE WS-CCPUR11 TO MESSAGEO
+                       MOVE DFHBMPRF   TO SEL1A   QUAN1A  MERCHNMA
+                                          SEL2A   QUAN2A  BASICCDA
+                                          SEL3A   QUAN3A  ADDONCDA
+                                          SEL4A   QUAN4A  SLCASHA
+                                          SEL5A   QUAN5A  SLPOSA
+                                          SEL6A   QUAN6A  SLONLINA
+                                          SEL7A   QUAN7A
+                    END-IF
+                 END-IF
+              END-IF
+           END-IF.
+
+       5600-VALIDATE-OTHER-EXIT.
+           EXIT.
+
+      */**** FILL WITH UNDERSCORE   ***********************************/
+       6000-UNDERSCORE-IF-SPACE.
+
+           IF BASICCDI = SPACES
+              MOVE '_'                 TO BASICCDO
+           END-IF
+           IF ADDONCDI = SPACES
+              MOVE '_'                 TO ADDONCDO
+           END-IF
+           IF SLCASHI = SPACES
+              MOVE '_'                 TO SLCASHO
+           END-IF
+           IF SLPOSI = SPACES
+              MOVE '_'                 TO SLPOSO
+           END-IF
+           IF SLONLINI = SPACES
+              MOVE '_'                 TO SLONLINO
+           END-IF.
+
+       6000-UNDERSCORE-IF-SPACE-EXIT.
+           EXIT.
+
+      */*** FILL THE BLANK UNDERSCORES   ******************************/
+       6100-FILL-UNDERSCORES.
+
+           IF SEL1I = SPACES
+              MOVE '_'                 TO SEL1O
+           END-IF
+           IF SEL2I = SPACES
+              MOVE '_'                 TO SEL2O
+           END-IF
+           IF SEL3I = SPACES
+              MOVE '_'                 TO SEL3O
+           END-IF
+           IF SEL4I = SPACES
+              MOVE '_'                 TO SEL4O
+           END-IF
+           IF SEL5I = SPACES
+              MOVE '_'                 TO SEL5O
+           END-IF
+           IF SEL6I = SPACES
+              MOVE '_'                 TO SEL6O
+           END-IF
+           IF SEL7I = SPACES
+              MOVE '_'                 TO SEL7O
+           END-IF
+
+           INSPECT QUAN1I REPLACING ALL SPACES BY '_'
+           INSPECT QUAN2I REPLACING ALL SPACES BY '_'
+           INSPECT QUAN3I REPLACING ALL SPACES BY '_'
+           INSPECT QUAN4I REPLACING ALL SPACES BY '_'
+           INSPECT QUAN5I REPLACING ALL SPACES BY '_'
+           INSPECT QUAN6I REPLACING ALL SPACES BY '_'
+           INSPECT QUAN7I REPLACING ALL SPACES BY '_'.
+
+       6100-FILL-UNDERSCORES-EXIT.
+           EXIT.
+
+      ******************************************************************
+      *           CURRENT DATE & TIME
+      ******************************************************************
+       7000-DISPLAY-DATE.
+
+           EXEC CICS ASKTIME
+                ABSTIME (WS-DATE-TIME)
+           END-EXEC.
+
+           EXEC CICS FORMATTIME
+                ABSTIME (WS-DATE-TIME)
+                DATESEP ('-')
+                DDMMYY  (WS-DATE)
+                TIME    (WS-TIME)
+                TIMESEP
+           END-EXEC.
+
+           MOVE WS-DATE(1:2)           TO WS-DISPLAY-DD
+           MOVE WS-DATE(4:2)           TO WS-DISPLAY-MM
+           MOVE WS-DATE(7:2)           TO WS-DISPLAY-YY
+           MOVE WS-DISPLAY-DATE        TO TIJDO.
+
+       7000-DISPLAY-DATE-EXIT.
+           EXIT.
+
+      ******************************************************************
+      *    DISPLAY THE MAP WITH RECORDS
+      ******************************************************************
+       8000-SEND-MAP.
+
+            EXEC CICS
+                 SEND MAPSET('CCPURM1')
+                      MAP   ('CCPURMK')
+                      FROM  (CCPURMKO)
+                      ERASE
+                      CURSOR
+            END-EXEC
+
+            EXEC CICS
+                 RETURN
+                 TRANSID('TRA2')
+                 COMMAREA (DFHCOMMAREA)
+                 LENGTH (LENGTH OF DFHCOMMAREA)
+            END-EXEC.
+
+
+       8000-SEND-MAP-EXIT.
+           EXIT.
+
+      ******* CALL ABEND WHEN PROGRAM ERROR   *************************/
+       9000-ABEND-CALL.
+
+            EXEC CICS
+                 ABEND
+            END-EXEC.
+
+       9000-ABEND-CALL-EXIT.
+           EXIT.
+
+
+
